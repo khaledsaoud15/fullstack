@@ -1,1 +1,6 @@
 @import "tailwindcss";
+
+@theme {
+  --color-main: #c19a83;
+  --background-image-hero: url("./assets/images/hero.jpg");
+}

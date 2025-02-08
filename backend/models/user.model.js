@@ -15,7 +15,7 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: false,
       min: 8,
       max: 20,
     },
@@ -27,7 +27,11 @@ const userSchema = new Schema(
     image: String,
     phone: String,
     address: String,
+    googleId: {
+      type: String,
+    },
   },
+
   { timestamps: true }
 );
 

@@ -2,10 +2,12 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { signInWithGoogle } from "../../auth.firebase";
 
+const storedUser = JSON.parse(localStorage.getItem("user")) || null;
+
 const initialState = {
-  user: null,
+  user: storedUser,
   loading: false,
-  error: false,
+  error: null,
 };
 
 export const register = createAsyncThunk(
@@ -16,10 +18,9 @@ export const register = createAsyncThunk(
         "http://localhost:5000/api/v1/register",
         userData
       );
-
       return data;
     } catch (error) {
-      return rejectWithValue(error.response?.data);
+      return rejectWithValue(error?.data);
     }
   }
 );
@@ -32,9 +33,10 @@ export const login = createAsyncThunk(
         email,
         password,
       });
+      localStorage.setItem("user", JSON.stringify(data));
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message);
+      return rejectWithValue(err.data?.message);
     }
   }
 );
@@ -44,7 +46,14 @@ export const loginInWithGoogle = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const user = await signInWithGoogle();
-      return user;
+      const idToken = await user.getIdToken();
+      const { data } = await axios.post(
+        "http://localhost:5000/api/v1/google-login",
+        { idToken }
+      );
+      localStorage.setItem("user", JSON.stringify(data));
+
+      return data;
     } catch (err) {
       return rejectWithValue(err.message);
     }
@@ -58,18 +67,20 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.loading = false;
-      state.error = false;
+      localStorage.removeItem("user");
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
       .addCase(register.pending, (state) => {
         state.loading = true;
-        state.error = false;
+        state.error = null;
       })
-      .addCase(register.fulfilled, (state) => {
+      .addCase(register.fulfilled, (state, action) => {
         state.loading = false;
-        state.error = false;
+        state.error = null;
+        state.user = action.payload;
       })
       .addCase(register.rejected, (state, action) => {
         state.error = action.payload || "Something went wrong";
@@ -77,11 +88,11 @@ const authSlice = createSlice({
       })
       .addCase(login.pending, (state) => {
         state.loading = true;
-        state.error = false;
+        state.error = null;
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
-        state.error = false;
+        state.error = null;
         state.user = action.payload;
       })
       .addCase(login.rejected, (state, action) => {
@@ -90,11 +101,11 @@ const authSlice = createSlice({
       })
       .addCase(loginInWithGoogle.pending, (state) => {
         state.loading = true;
-        state.error = false;
+        state.error = null;
       })
       .addCase(loginInWithGoogle.fulfilled, (state, action) => {
         state.loading = false;
-        state.error = false;
+        state.error = null;
         state.user = action.payload;
       })
       .addCase(loginInWithGoogle.rejected, (state, action) => {

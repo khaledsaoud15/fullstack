@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { login, loginInWithGoogle } from "../redux/auth/authSlice";
 import { Link } from "react-router-dom";
+import { Button } from "@mui/material";
+import { Google } from "@mui/icons-material";
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -42,7 +44,7 @@ const Login = () => {
       ></div>
     );
   return (
-    <section className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 space-y-4 w-1/4 h-fit rounded shadow border border-gray-300 p-8">
+    <section className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 space-y-2 w-1/4 h-fit rounded shadow border border-gray-300 p-8">
       <h2 className="text-lg font-bold text-gray-900 text-center">Login</h2>
       <div className="space-y-3 w-full h-fit">
         <div className="space-y-2">
@@ -77,24 +79,26 @@ const Login = () => {
           />
         </div>
       </div>
-      <Link to="/register" className="text-blue-500 underline">
+      <Link to="/register" className="text-blue-500 underline text-xs">
         dont have an account ? register
       </Link>
-      <div className="flex items-center gap-4">
-        <button
+      <div className="flex items-center gap-4 w-full my-2">
+        <Button
           onClick={loginUser}
           disabled={loading}
-          className="w-full bg-blue-500 rounded shadow text-white py-2 cursor-pointer"
+          variant="contained"
+          className="!w-1/2"
         >
-          {loading ? "Loggin in" : "Loggin"}
-        </button>
-        <button
+          {loading ? "Loggin in" : "Log in"}
+        </Button>
+        <Button
           onClick={() => dispatch(loginInWithGoogle())}
           disabled={loading}
-          className="w-full bg-blue-500 rounded shadow text-white py-2 cursor-pointer"
+          variant="contained"
+          className="!bg-red-500 !w-1/2"
         >
-          {loading ? "Loggin in" : "Logg in with GOOGLE"}
-        </button>
+          {loading ? "Loggin in" : <Google />}
+        </Button>
       </div>
       {error && <p className="text-red-500">{error}</p>}
     </section>

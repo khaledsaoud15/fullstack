@@ -1,5 +1,6 @@
 const User = require("../models/user.model");
 const CryptoJS = require("crypto-js");
+const admin = require("../lib/firebaseAdmin");
 
 const register = async (req, res) => {
   const { username, email, password, address, image, phone } = req.body;
@@ -55,6 +56,49 @@ const login = async (req, res) => {
   }
 };
 
+const googleLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({ message: "Missing ID Token" });
+    }
+
+    // Verify Firebase ID Token
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+
+    const { uid, email, name, picture } = decodedToken;
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Generate a random password for Google users
+      const randomPassword = Math.random().toString(36).slice(-8);
+      const hashedPassword = await CryptoJS.AES.encrypt(
+        randomPassword,
+        process.env.SECRET_KEY
+      ); // Hash the random password
+
+      // Create a new user
+      user = new User({
+        googleId: uid,
+        username: name,
+        email,
+        password: hashedPassword, // Store hashed random password
+        image: picture,
+      });
+
+      await user.save();
+    }
+
+    res.status(201).json(user);
+  } catch (err) {
+    console.error("Google Login Error:", err.message);
+    res.status(500).json({ message: "Authentication failed" });
+  }
+};
+
 const resetPassword = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -79,4 +123,4 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { register, login, resetPassword };
+module.exports = { register, login, resetPassword, googleLogin };
