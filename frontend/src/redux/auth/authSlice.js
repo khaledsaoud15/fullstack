@@ -8,6 +8,7 @@ const initialState = {
   user: storedUser,
   loading: false,
   error: null,
+  token: JSON.parse(localStorage.getItem("token")) || null,
 };
 
 export const register = createAsyncThunk(
@@ -16,7 +17,12 @@ export const register = createAsyncThunk(
     try {
       const { data } = await axios.post(
         "http://localhost:5000/api/v1/register",
-        userData
+        userData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
       return data;
     } catch (error) {
@@ -34,6 +40,7 @@ export const login = createAsyncThunk(
         password,
       });
       localStorage.setItem("user", JSON.stringify(data));
+      localStorage.setItem("token", JSON.stringify(data.accessToken));
       return data;
     } catch (err) {
       return rejectWithValue(err.data?.message);
@@ -51,7 +58,9 @@ export const loginInWithGoogle = createAsyncThunk(
         "http://localhost:5000/api/v1/google-login",
         { idToken }
       );
+
       localStorage.setItem("user", JSON.stringify(data));
+      localStorage.setItem("token", JSON.stringify(data.accessToken));
 
       return data;
     } catch (err) {
@@ -68,6 +77,7 @@ const authSlice = createSlice({
       state.user = null;
       state.loading = false;
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
       state.error = null;
     },
   },

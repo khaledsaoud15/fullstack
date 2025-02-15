@@ -3,6 +3,7 @@ import { Button } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/auth/authSlice";
+import { Link } from "react-router-dom";
 
 const DropDown = ({ active, logoutFN }) => {
   return (
@@ -11,10 +12,13 @@ const DropDown = ({ active, logoutFN }) => {
         active ? "h-fit" : "h-0"
       } bg-white rounded shadow absolute top-[140%] overflow-hidden left-1/2 -translate-x-1/2`}
     >
-      <div className="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-gray-50 h-full w-full">
+      <Link
+        to="/profile"
+        className="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-gray-50 h-full w-full"
+      >
         <p>Profile</p>
         <Settings className="!text-sm" />
-      </div>
+      </Link>
       <div
         onClick={() => logoutFN()}
         className="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-gray-50 h-full w-full"

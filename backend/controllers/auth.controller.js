@@ -1,6 +1,7 @@
 const User = require("../models/user.model");
 const CryptoJS = require("crypto-js");
 const admin = require("../lib/firebaseAdmin");
+const jwt = require("jsonwebtoken");
 
 const register = async (req, res) => {
   const { username, email, password, address, image, phone } = req.body;
@@ -22,7 +23,7 @@ const register = async (req, res) => {
       password: hashedPassword,
       phone,
       address,
-      image,
+      image: req.file ? req.file.path : "",
     });
     await newUser.save();
     res.status(201).json(newUser);
@@ -32,6 +33,7 @@ const register = async (req, res) => {
   }
 };
 
+// LOGIN
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -49,7 +51,13 @@ const login = async (req, res) => {
       return res.status(403).json({ message: "Incorrect Password" });
     }
 
-    res.status(200).json(user);
+    const token = {
+      id: user._id,
+      role: user.role,
+    };
+    const accessToken = jwt.sign(token, process.env.TOKEN_KEY);
+
+    res.status(200).json({ ...user._doc, accessToken });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Error: " + err.message });
@@ -59,17 +67,14 @@ const login = async (req, res) => {
 const googleLogin = async (req, res) => {
   try {
     const { idToken } = req.body;
-
     if (!idToken) {
       return res.status(400).json({ message: "Missing ID Token" });
     }
 
-    // Verify Firebase ID Token
     const decodedToken = await admin.auth().verifyIdToken(idToken);
 
     const { uid, email, name, picture } = decodedToken;
 
-    // Check if user exists
     let user = await User.findOne({ email });
 
     if (!user) {
@@ -78,21 +83,26 @@ const googleLogin = async (req, res) => {
       const hashedPassword = await CryptoJS.AES.encrypt(
         randomPassword,
         process.env.SECRET_KEY
-      ); // Hash the random password
+      );
 
-      // Create a new user
       user = new User({
         googleId: uid,
         username: name,
         email,
-        password: hashedPassword, // Store hashed random password
+        password: hashedPassword,
         image: picture,
       });
 
       await user.save();
     }
 
-    res.status(201).json(user);
+    const token = {
+      id: user._id,
+      role: user.role,
+    };
+    const accessToken = jwt.sign(token, process.env.TOKEN_KEY);
+
+    res.status(200).json({ ...user._doc, accessToken });
   } catch (err) {
     console.error("Google Login Error:", err.message);
     res.status(500).json({ message: "Authentication failed" });

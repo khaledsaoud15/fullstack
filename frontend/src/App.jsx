@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import Home from "./pages/Home";
 import ProtectedAuthRoute from "./lib/ProtectedRoute";
 import { useEffect } from "react";
+import Profile from "./pages/Profile";
 
 const App = () => {
   const user = useSelector((state) => state.auth.user);
@@ -17,6 +18,7 @@ const App = () => {
           path="/"
           element={user ? <Home /> : <Navigate to="/login" replace />}
         />
+        <Route path="/profile" element={<Profile />} />
 
         {/* Prevent logged-in users from accessing login & register */}
         <Route
