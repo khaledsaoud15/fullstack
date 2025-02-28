@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import ProtectedAuthRoute from "./lib/ProtectedRoute";
 import { useEffect } from "react";
 import Profile from "./pages/Profile";
+import Dashboared from "./pages/Dashboared";
 
 const App = () => {
   const user = useSelector((state) => state.auth.user);
@@ -17,6 +18,17 @@ const App = () => {
         <Route
           path="/"
           element={user ? <Home /> : <Navigate to="/login" replace />}
+        />
+
+        <Route
+          path="/dashboared/*"
+          element={
+            user?.role === "admin" ? (
+              <Dashboared />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
         />
         <Route path="/profile" element={<Profile />} />
 

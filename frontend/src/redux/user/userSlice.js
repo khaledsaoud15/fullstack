@@ -20,11 +20,9 @@ export const updateUser = createAsyncThunk(
         formData.append(key, value);
       });
 
-      console.log("Sending Data:", Object.fromEntries(formData.entries())); // Debug
-
       const { data } = await axios({
         method: "PUT",
-        url: `http://localhost:5000/api/v1/user/update/${id}`,
+        url: `http://localhost:5000/api/v1/auth/user/update/${id}`,
         data: formData,
         headers: {
           "x-auth-token": token,

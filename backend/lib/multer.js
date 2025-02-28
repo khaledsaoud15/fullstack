@@ -10,15 +10,30 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_SECRET,
 });
 
-// win tkhabi les images f server 2
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "user-profile",
-    format: async (req, file) => file.mimetype.split("/")[1], // Dynamic format
-    public_id: (req, file) => `user-${Date.now()}`,
+const storageOptions = (folderName) =>
+  new CloudinaryStorage({
+    cloudinary,
+    params: async (req, file) => ({
+      folder: folderName,
+      format: file.mimetype.split("/")[1],
+      public_id: `${folderName}-${Date.now()}`,
+    }),
+  });
+
+const userStorage = new CloudinaryStorage(storageOptions("user-profile"));
+const productStorage = new CloudinaryStorage(storageOptions("products"));
+
+const uploadOptions = (storage) => ({
+  storage,
+  fileFilter(req, file, cb) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+      return cb(new Error("Only image files are allowed!"));
+    }
+    cb(null, true);
   },
 });
 
-const upload = multer({ storage: storage });
-module.exports = { upload };
+const uploadUser = multer(uploadOptions(userStorage));
+const uploadProduct = multer(uploadOptions(productStorage));
+
+module.exports = { uploadUser, uploadProduct };

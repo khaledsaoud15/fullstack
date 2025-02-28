@@ -2,6 +2,7 @@ const User = require("../models/user.model");
 const CryptoJS = require("crypto-js");
 const admin = require("../lib/firebaseAdmin");
 const jwt = require("jsonwebtoken");
+const UserSignIn = require("../models/userSignin.model");
 
 const register = async (req, res) => {
   const { username, email, password, address, image, phone } = req.body;
@@ -25,6 +26,7 @@ const register = async (req, res) => {
       address,
       image: req.file ? req.file.path : "",
     });
+    await UserSignIn.create({ userId: newUser._id });
     await newUser.save();
     res.status(201).json(newUser);
   } catch (err) {

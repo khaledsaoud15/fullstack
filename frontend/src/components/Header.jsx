@@ -1,11 +1,17 @@
-import { Login, Logout, Settings, ShoppingCart } from "@mui/icons-material";
+import {
+  Dashboard,
+  Login,
+  Logout,
+  Settings,
+  ShoppingCart,
+} from "@mui/icons-material";
 import { Button } from "@mui/material";
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../redux/auth/authSlice";
 import { Link } from "react-router-dom";
 
-const DropDown = ({ active, logoutFN }) => {
+const DropDown = ({ active, logoutFN, role }) => {
   return (
     <div
       className={`flex flex-col  w-32 ${
@@ -26,12 +32,22 @@ const DropDown = ({ active, logoutFN }) => {
         <p>Logout</p>
         <Logout className="!text-sm" />
       </div>
+      {role === "admin" && (
+        <Link
+          to="/dashboared"
+          className="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-gray-50 h-full w-full"
+        >
+          <p>Dashboared</p>
+          <Dashboard className="!text-sm" />
+        </Link>
+      )}
     </div>
   );
 };
 
 const Header = () => {
   const user = useSelector((state) => state.auth.user);
+  const { role } = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const [active, setActive] = useState(false);
 
@@ -67,7 +83,7 @@ const Header = () => {
                   className="w-6 h-6 rounded-full cursor-pointer"
                   onClick={() => setActive(!active)}
                 />
-                <DropDown active={active} logoutFN={logOutUser} />
+                <DropDown active={active} logoutFN={logOutUser} role={role} />
               </div>
             </div>
           ) : (
